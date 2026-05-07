@@ -29,6 +29,7 @@ export default class Config {
       ["DB_USER", this.dbUser],
       ["DB_PASSWORD", this.dbPassword],
       ["DB_NAME", this.dbName],
+      ["PORT", this.port]
     ];
 
     for (const [name, value] of required) {
