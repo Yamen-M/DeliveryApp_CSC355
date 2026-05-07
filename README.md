@@ -113,9 +113,6 @@ Copy the template below into a new file named `.env` at the project root
 ```
 PORT=3000
 
-JWT_SECRET=replace_this_with_a_long_random_string
-JWT_EXPIRES_IN=1h
-
 DB_HOST=localhost
 DB_PORT=3306
 DB_USER=your_mysql_username
@@ -123,6 +120,7 @@ DB_PASSWORD=your_mysql_password
 DB_NAME=food_delivery
 DB_CONNECTION_LIMIT=10
 DB_QUEUE_LIMIT=0
+LOG_LEVEL=INFO
 ```
 
 > The `.env` file is **git-ignored**.  Never commit real credentials.
@@ -143,9 +141,7 @@ Every variable the application reads from the environment is documented below.
 
 | Variable | Required | Default | Description |
 |---|---|---|---|
-| `PORT` | Yes | — | Port the HTTP server listens on |
-| `JWT_SECRET` | Yes | — | Secret used to sign session tokens |
-| `JWT_EXPIRES_IN` | No | `1h` | Token lifetime (currently informational only) |
+| `PORT` | No | `3000` | Port the HTTP server listens on |
 | `DB_HOST` | Yes | — | MySQL server hostname or IP |
 | `DB_PORT` | Yes | — | MySQL server port (usually `3306`) |
 | `DB_USER` | Yes | — | MySQL username |
@@ -153,6 +149,7 @@ Every variable the application reads from the environment is documented below.
 | `DB_NAME` | Yes | — | Name of the database schema to use |
 | `DB_CONNECTION_LIMIT` | No | `10` | Maximum simultaneous MySQL connections in the pool |
 | `DB_QUEUE_LIMIT` | No | `0` | Maximum queued connection requests (`0` = unlimited) |
+| `LOG_LEVEL` | No | `INFO` | Minimum log severity written to the console and `Logs/app.log` |
 
 ---
 
@@ -203,6 +200,8 @@ DeliveryApp/
 │   ├── OrderRepository.mjs        Order and cart CRUD
 │   └── DeliveryAssignmentRepository.mjs  Assignment CRUD
 ├── Utils/
+│   ├── Config.mjs               Reads and validates environment settings once at startup
+│   ├── Logger.mjs               Shared logger that writes to console and Logs/app.log
 │   ├── constants.mjs              OrderStatus, UserRoles, HTTP_STATUS, limits
 │   ├── token.mjs                  issueToken / verifyToken / revokeToken
 │   ├── bodyParser.mjs             Reads and parses URL-encoded POST bodies
@@ -252,26 +251,12 @@ DeliveryApp/
 
 ---
 
-## Student Continuation
+## Implemented Infrastructure
 
-The following three features are **intentionally left incomplete** for you to
-implement as part of the course.  Read `TODO.md` for detailed instructions and
-code skeletons.
+The codebase now includes the shared `Logger` and `Config` utilities from
+`TODO.md`, and the `Customer`, `Courrier`, and `RestaurantManager` models each
+implement `logout()` so controllers can delegate session cleanup cleanly.
 
-### 1. `Logger` class — `Utils/Logger.mjs`
-A structured logging utility with levels (`DEBUG`, `INFO`, `WARN`, `ERROR`)
-that writes timestamped messages to the console and to `Logs/app.log`.
-
-### 2. `Config` class — `Utils/Config.mjs`
-A singleton that reads all environment variables at startup, validates required
-ones, and exposes them as typed properties — replacing raw `process.env.*`
-calls across the codebase.
-
-### 3. `logout()` on User subclasses
-`Customer`, `Courrier`, and `RestaurantManager` all inherit an abstract
-`logout()` from `User` that currently throws.  Each subclass must override it
-to revoke the session token and clear the cookie.
-
-> The `Guard/Guard.mjs` class is also fully implemented but not yet wired into
-> any controller.  Replacing the manual `verifyToken()` calls with the chainable
-> guard is a good stretch goal.
+> The `Guard/Guard.mjs` class is still not wired into any controller.  Replacing
+> the manual `verifyToken()` calls with the chainable guard remains a good
+> stretch goal.
