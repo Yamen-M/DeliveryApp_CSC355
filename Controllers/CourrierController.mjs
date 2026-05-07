@@ -16,7 +16,7 @@ export const courrierController = {
       const { phoneNumber, password } = await parseBody(req); // extracts phone number and password from the form
       const courrier = await Courrier.register(phoneNumber, password); // creates the courrier in the DB
       await issueToken(res, courrier, UserRoles.COURRIER);
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/courrier/dashboard" });
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/courrier/dashboard" });
       res.end();
     } catch {
       errorController(HTTP_STATUS.BAD_REQUEST, req, res);
@@ -29,7 +29,7 @@ export const courrierController = {
       const { phoneNumber, password } = await parseBody(req); // extracts phone number and password from the form
       const courrier = await Courrier.login(phoneNumber, password); // verifies phone number and password
       await issueToken(res, courrier, UserRoles.COURRIER);
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/courrier/dashboard" });
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/courrier/dashboard" });
       res.end();
     } catch {
       errorController(HTTP_STATUS.UNAUTHORIZED, req, res);
@@ -38,14 +38,14 @@ export const courrierController = {
 
   logout: async (req, res) => {
     await Courrier.logout(req, res);
-    res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/login" });
+    res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/login" });
     res.end();
   },
 
   // handles GET /courrier/dashboard — renders the courrier dashboard with assigned deliveries
   dashboard: async (req, res) => {
     try {
-      const { userId } = await verifyToken(req);
+      const { userId } = await verifyToken(req, UserRoles.COURRIER);
       const rows = await assignmentRepo.findByCourierId(userId); // fetches all assignments for this courrier from the DB
       const assignments = rows.length
         ? rows.map(a =>
@@ -73,10 +73,10 @@ export const courrierController = {
   // handles POST /courrier/status — updates the delivery status of an assigned order
   updateStatus: async (req, res) => {
     try {
-      await verifyToken(req);
+      await verifyToken(req, UserRoles.COURRIER);
       const { assignmentId, status } = await parseBody(req); // extracts the assignment ID and new status from the form
       await DeliveryAssignment.updateStatus(assignmentId, status); // delegates the DB update to the model
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/courrier/dashboard" }); // redirects back to the dashboard to see the updated status
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/courrier/dashboard" }); // redirects back to the dashboard to see the updated status
       res.end();
     } catch {
       errorController(HTTP_STATUS.SERVER_ERROR, req, res); // sends 500 if anything goes wrong

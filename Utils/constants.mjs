@@ -30,6 +30,7 @@ export const HTTP_STATUS = Object.freeze({
   OK: 200, // request succeeded
   CREATE: 201, // resource successfully created
   TEMP_REDIRECT: 302, // temporary redirection to another URL
+  SEE_OTHER: 303, // redirect after a successful form POST using a GET request
   BAD_REQUEST: 400, // client sent invalid data
   UNAUTHORIZED: 401, // client is not authenticated
   NOT_FOUND: 404, // requested resource does not exist

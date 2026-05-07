@@ -3,7 +3,7 @@ import { sendHTML } from "../Utils/sendHTML.mjs"; // sends a static HTML file wi
 import { sendCSS } from "../Utils/sendCSS.mjs"; // reads and sends a CSS file from Views/Styles/
 import { renderHTML } from "../Utils/renderHTML.mjs"; // renders an HTML template with injected data
 import { verifyToken } from "../Utils/token.mjs"; // reads and verifies the JWT from the request cookie
-import { HTTP_STATUS } from "../Utils/constants.mjs"; // HTTP status code constants
+import { HTTP_STATUS, UserRoles } from "../Utils/constants.mjs"; // HTTP status code constants
 import RestaurantRepository from "../Database/RestaurantRepository.mjs"; // reads restaurant and menu data from the DB
 import OrderRepository from "../Database/OrderRepository.mjs"; // reads the customer's active cart for this restaurant
 
@@ -32,7 +32,7 @@ export const pageController = {
   // serves GET /home — renders the customer home page with their email and restaurant list
   home: async (req, res) => {
     try {
-      const { userEmail } = await verifyToken(req);
+      const { userEmail } = await verifyToken(req, UserRoles.CUSTOMER);
       const restaurants = await restaurantRepo.findAll(); // fetches every restaurant row from the DB
       const restaurantList = restaurants.length
         ? restaurants.map(r => `<li><a href="/restaurant/menu?id=${r.restaurantId}">${r.restaurantName}</a></li>`).join("") // each restaurant links to its menu page
@@ -50,7 +50,7 @@ export const pageController = {
   // serves GET /restaurant/menu?id=... — renders a restaurant's menu page for a logged-in customer
   restaurantMenu: async (req, res) => {
     try {
-      const { userId } = await verifyToken(req);
+      const { userId } = await verifyToken(req, UserRoles.CUSTOMER);
       const url = new URL(req.url, `http://${req.headers.host}`);
       const restaurantId = url.searchParams.get("id");
       const restaurant = await restaurantRepo.findById(restaurantId);

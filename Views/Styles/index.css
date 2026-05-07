@@ -28,6 +28,51 @@ main {
   max-width: 400px;
 }
 
+h1 {
+  margin-bottom: 1.5rem;
+  font-size: 1.4rem;
+  color: #111;
+  text-align: center;
+}
+
+.role-options {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.5rem;
+  margin-bottom: 1.5rem;
+}
+
+.role-option {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 42px;
+  padding: 0.6rem 0.4rem;
+  border: 1px solid #d9e1e3;
+  border-radius: 6px;
+  color: #506064;
+  font-size: 0.85rem;
+  font-weight: 700;
+  text-align: center;
+  text-decoration: none;
+  transition:
+    border-color 0.2s,
+    color 0.2s,
+    background-color 0.2s;
+}
+
+.role-option:hover {
+  border-color: #00a99d;
+  color: #007f76;
+  background-color: #f0fffd;
+}
+
+.role-option.active {
+  border-color: #00ccbc;
+  color: #006b63;
+  background-color: #e8fffc;
+}
+
 /* Form Layout */
 form {
   display: flex;
@@ -78,4 +123,21 @@ button:hover {
 
 button:active {
   transform: scale(0.98);
+}
+
+.auth-switch {
+  margin-top: 1rem;
+  font-size: 0.9rem;
+  color: #777;
+  text-align: center;
+}
+
+.auth-switch a {
+  color: #00a99d;
+  font-weight: 700;
+  text-decoration: none;
+}
+
+.auth-switch a:hover {
+  text-decoration: underline;
 }

@@ -2,9 +2,9 @@ import { v4 } from "uuid"; // generates a unique ID for each new customer
 import bcrypt from "bcrypt"; // handles password hashing and comparison
 import User from "./User.mjs"; // inherits the abstract User base class
 import CustomerRepository from "../Database/CustomerRepository.mjs"; // data access layer for Customer DB operations
-import { SALT_ROUNDS } from "../Utils/constants.mjs"; // salt rounds constant used for bcrypt hashing
+import { SALT_ROUNDS, UserRoles } from "../Utils/constants.mjs"; // salt rounds constant used for bcrypt hashing
 import { logger } from "../Utils/Logger.mjs";
-import { revokeToken } from "../Utils/token.mjs";
+import { buildClearTokenCookie, revokeToken } from "../Utils/token.mjs";
 
 export default class Customer extends User {
   #orders; // private field — the customer's order history, not directly accessible from outside
@@ -53,8 +53,8 @@ export default class Customer extends User {
   }
 
   static async logout(req, res) {
-    await revokeToken(req);
-    res.setHeader("Set-Cookie", "token=; HttpOnly; Path=/; Max-Age=0");
+    await revokeToken(req, UserRoles.CUSTOMER);
+    res.setHeader("Set-Cookie", buildClearTokenCookie(UserRoles.CUSTOMER));
   }
 }
 

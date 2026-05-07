@@ -25,7 +25,7 @@ export const restaurantController = {
         await restaurantRepo.createRestaurant(v4(), restaurantName, manager.userId);
       }
       await issueToken(res, manager, UserRoles.MANAGER);
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/restaurant/dashboard" });
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/restaurant/dashboard" });
       res.end();
     } catch {
       errorController(HTTP_STATUS.BAD_REQUEST, req, res);
@@ -38,7 +38,7 @@ export const restaurantController = {
       const { restaurantName, password } = await parseBody(req);
       const manager = await RestaurantManager.login(restaurantName, password);
       await issueToken(res, manager, UserRoles.MANAGER);
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/restaurant/dashboard" });
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/restaurant/dashboard" });
       res.end();
     } catch {
       errorController(HTTP_STATUS.UNAUTHORIZED, req, res);
@@ -47,14 +47,14 @@ export const restaurantController = {
 
   logout: async (req, res) => {
     await RestaurantManager.logout(req, res);
-    res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/login" });
+    res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/login" });
     res.end();
   },
 
   // handles GET /restaurant/dashboard — renders the manager dashboard with live menu and order data
   dashboard: async (req, res) => {
     try {
-      const { userId, restaurantName } = await verifyToken(req);
+      const { userId } = await verifyToken(req, UserRoles.MANAGER);
       const restaurant = await restaurantRepo.findByManagerId(userId);
       let menuItems = "<li class='empty'>No menu items yet.</li>";
       let orders = "<li class='empty'>No pending orders.</li>";
@@ -83,7 +83,7 @@ export const restaurantController = {
         }
       }
       await renderHTML(res, "Dash-ManagerView.html", {
-        restaurantName,
+        restaurantName: restaurant?.restaurantName ?? "Restaurant",
         orders,
         menuItems,
       });
@@ -96,13 +96,13 @@ export const restaurantController = {
   // handles POST /restaurant/menu/add — adds a new item to the manager's restaurant menu
   addMenuItem: async (req, res) => {
     try {
-      const { userId } = await verifyToken(req);
+      const { userId } = await verifyToken(req, UserRoles.MANAGER);
       const { name, price, description } = await parseBody(req);
       const restaurant = await restaurantRepo.findByManagerId(userId);
       if (!restaurant) return errorController(HTTP_STATUS.NOT_FOUND, req, res);
       const itemId = v4();
       await restaurantRepo.addMenuItem(itemId, restaurant.restaurantId, name, price, description);
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/restaurant/dashboard" });
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/restaurant/dashboard" });
       res.end();
     } catch {
       errorController(HTTP_STATUS.SERVER_ERROR, req, res);
@@ -112,7 +112,7 @@ export const restaurantController = {
   // handles POST /order/assign — assigns a courier to a submitted order and marks it Preparing
   assignCourier: async (req, res) => {
     try {
-      const { userId } = await verifyToken(req);
+      const { userId } = await verifyToken(req, UserRoles.MANAGER);
       const { orderId, courierId } = await parseBody(req);
       const order = await orderRepo.findById(orderId);
       if (!order) return errorController(HTTP_STATUS.NOT_FOUND, req, res);
@@ -122,7 +122,7 @@ export const restaurantController = {
       }
       await DeliveryAssignment.create(orderId, courierId);
       await orderRepo.updateStatus(orderId, OrderStatus.PREPARING);
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/restaurant/dashboard" });
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/restaurant/dashboard" });
       res.end();
     } catch {
       errorController(HTTP_STATUS.SERVER_ERROR, req, res);

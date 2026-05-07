@@ -24,6 +24,15 @@ export default class DeliveryAssignmentRepository {
     return rows[0]; // returns the first matching row as a plain object
   }
 
+  async findById(assignmentId) {
+    const [rows] = await this.#database.query(
+      `SELECT * FROM DeliveryAssignment WHERE assignmentId = ?`, // looks up an assignment by its unique ID
+      [assignmentId],
+    );
+    if (rows.length === 0) return null;
+    return rows[0];
+  }
+
   async findByCourierId(courierId) {
     const [rows] = await this.#database.query(
       `SELECT * FROM DeliveryAssignment WHERE courierId = ?`, // fetches all assignments for a given courrier

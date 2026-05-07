@@ -1,10 +1,10 @@
 import User from "./User.mjs"; // inherits the abstract User base class
 import { v4 } from "uuid"; // generates a unique ID for each new manager
 import bcrypt from "bcrypt"; // handles password hashing and comparison
-import { SALT_ROUNDS } from "../Utils/constants.mjs"; // shared bcrypt cost factor
+import { SALT_ROUNDS, UserRoles } from "../Utils/constants.mjs"; // shared bcrypt cost factor
 import RestaurantManagerRepository from "../Database/RestaurantManagerRepository.mjs"; // data access layer for RestaurantManager
 import { logger } from "../Utils/Logger.mjs";
-import { revokeToken } from "../Utils/token.mjs";
+import { buildClearTokenCookie, revokeToken } from "../Utils/token.mjs";
 
 export default class RestaurantManager extends User {
   constructor(userId, restaurantName) {
@@ -37,7 +37,7 @@ export default class RestaurantManager extends User {
   }
 
   static async logout(req, res) {
-    await revokeToken(req);
-    res.setHeader("Set-Cookie", "token=; HttpOnly; Path=/; Max-Age=0");
+    await revokeToken(req, UserRoles.MANAGER);
+    res.setHeader("Set-Cookie", buildClearTokenCookie(UserRoles.MANAGER));
   }
 }

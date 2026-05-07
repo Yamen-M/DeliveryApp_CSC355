@@ -1,7 +1,7 @@
 import { v4 } from "uuid"; // generates a unique ID for each new order
 import OrderRepository from "../Database/OrderRepository.mjs"; // persists orders and their items
 import { errorController } from "./ErrorController.mjs"; // sends error pages on failure
-import { HTTP_STATUS, OrderStatus, OrderLimits } from "../Utils/constants.mjs"; // status constants and business rule limits
+import { HTTP_STATUS, OrderStatus, OrderLimits, UserRoles } from "../Utils/constants.mjs"; // status constants and business rule limits
 import { parseBody } from "../Utils/bodyParser.mjs"; // reads and decodes the POST request body
 import { verifyToken } from "../Utils/token.mjs"; // reads the JWT cookie to identify the logged-in customer
 import { renderHTML } from "../Utils/renderHTML.mjs"; // renders an HTML template with injected data
@@ -12,7 +12,7 @@ export const orderController = {
   // handles POST /cart/add — adds one item to the customer's in-progress cart for a restaurant
   addToCart: async (req, res) => {
     try {
-      const { userId } = await verifyToken(req);
+      const { userId } = await verifyToken(req, UserRoles.CUSTOMER);
       const { restaurantId, itemName, itemPrice } = await parseBody(req);
       let cartOrder = await repository.findCartOrder(userId, restaurantId);
       if (!cartOrder) {
@@ -25,7 +25,7 @@ export const orderController = {
         cartOrder = { orderId };
       }
       await repository.addOrderItem(cartOrder.orderId, itemName, Number(itemPrice));
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: `/restaurant/menu?id=${restaurantId}` });
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: `/restaurant/menu?id=${restaurantId}` });
       res.end();
     } catch {
       errorController(HTTP_STATUS.SERVER_ERROR, req, res);
@@ -35,12 +35,12 @@ export const orderController = {
   // handles POST /order/create — submits the customer's existing cart for this restaurant
   create: async (req, res) => {
     try {
-      const { userId } = await verifyToken(req);
+      const { userId } = await verifyToken(req, UserRoles.CUSTOMER);
       const { restaurantId } = await parseBody(req);
       const cartOrder = await repository.findCartOrder(userId, restaurantId);
       if (!cartOrder) return errorController(HTTP_STATUS.BAD_REQUEST, req, res);
       await repository.updateStatus(cartOrder.orderId, OrderStatus.SUBMITTED);
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: `/order?id=${cartOrder.orderId}` });
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: `/order?id=${cartOrder.orderId}` });
       res.end();
     } catch {
       errorController(HTTP_STATUS.SERVER_ERROR, req, res);
@@ -50,7 +50,7 @@ export const orderController = {
   // handles GET /order?id=... — renders the order detail page for the logged-in customer
   view: async (req, res) => {
     try {
-      await verifyToken(req);
+      await verifyToken(req, UserRoles.CUSTOMER);
       const url = new URL(req.url, `http://${req.headers.host}`); // parses the URL to extract query params
       const orderId = url.searchParams.get("id"); // reads the order ID from the ?id= query string
       const order = await repository.findById(orderId); // fetches the order row from the DB
@@ -74,7 +74,7 @@ export const orderController = {
   // handles POST /order/cancel — cancels an existing order if it has not yet been picked up
   cancel: async (req, res) => {
     try {
-      const { userId } = await verifyToken(req); // confirms the customer is authenticated and reads their ID
+      const { userId } = await verifyToken(req, UserRoles.CUSTOMER); // confirms the customer is authenticated and reads their ID
       const { orderId } = await parseBody(req); // reads the order ID from the hidden form field
       const order = await repository.findById(orderId); // fetches the order to verify ownership and current status
       if (!order) return errorController(HTTP_STATUS.NOT_FOUND, req, res); // sends 404 if the order doesn't exist
@@ -83,7 +83,7 @@ export const orderController = {
         return errorController(HTTP_STATUS.BAD_REQUEST, req, res);
       }
       await repository.updateStatus(orderId, OrderStatus.INCOMPLETE); // marks the order as Incomplete Cart (cancelled)
-      res.writeHead(HTTP_STATUS.TEMP_REDIRECT, { Location: "/home" }); // redirects back to the customer home page
+      res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/home" }); // redirects back to the customer home page
       res.end();
     } catch {
       errorController(HTTP_STATUS.SERVER_ERROR, req, res); // sends 500 if anything goes wrong
