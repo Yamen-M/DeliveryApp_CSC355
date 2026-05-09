@@ -7,7 +7,12 @@
   </head>
   <body>
     <main>
-      <h1 style="margin-bottom: 1.5rem; font-size: 1.4rem; color: #111;">Restaurant Login</h1>
+      <h1>Restaurant Login</h1>
+      <div class="role-options" aria-label="Login options">
+        <a class="role-option" href="/login">Customer</a>
+        <span class="role-option active">Restaurant</span>
+        <a class="role-option" href="/courrier/login">Courrier</a>
+      </div>
       <form method="POST" action="/restaurant/login">
         <label>
           Restaurant Name:
@@ -19,8 +24,8 @@
         </label>
         <button type="submit">Log in</button>
       </form>
-      <p style="margin-top: 1rem; font-size: 0.9rem; color: #777; text-align: center;">
-        New restaurant? <a href="/restaurant/register" style="color: #00ccbc;">Register</a>
+      <p class="auth-switch">
+        New restaurant? <a href="/restaurant/register">Register</a>
       </p>
     </main>
   </body>
