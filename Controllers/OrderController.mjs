@@ -71,6 +71,45 @@ export const orderController = {
     }
   },
 
+  // handles GET /orders — lists all orders placed by the logged-in customer
+  list: async (req, res) => {
+    try {
+      const { userId } = await verifyToken(req, UserRoles.CUSTOMER);
+      const orders = await repository.findByCustomerId(userId); // fetches all orders for this customer
+      
+      // exclude incomplete carts from the list
+      const filteredOrders = orders.filter(o => o.status !== OrderStatus.INCOMPLETE);
+      
+      const ordersList = filteredOrders.length
+        ? (await Promise.all(
+            filteredOrders.map(async (order) => {
+              const items = await repository.findItemsByOrderId(order.orderId);
+              const totalPrice = items.reduce((sum, i) => sum + Number(i.price), 0).toFixed(2);
+              return `<div class="card">
+                <div style="display: flex; justify-content: space-between; align-items: center;">
+                  <div>
+                    <h3 style="margin: 0;">Order <span style="color:#999; font-weight:400; font-size:0.95rem;">#${order.orderId}</span></h3>
+                    <p style="margin: 0.5rem 0 0 0; color:#666; font-size:0.9rem;">${items.length} item${items.length !== 1 ? 's' : ''} — $${totalPrice}</p>
+                  </div>
+                  <div style="text-align: right;">
+                    <span class="badge">${order.status}</span>
+                    <br>
+                    <a href="/order?id=${order.orderId}" style="color:#00ccbc; text-decoration:none; font-size:0.9rem; margin-top:0.5rem; display:block;">View Details →</a>
+                  </div>
+                </div>
+              </div>`;
+            })
+          )).join("")
+        : "<div class='card'><p style='color:#999; text-align:center;'>No orders yet. <a href='/home' style='color:#00ccbc;'>Browse restaurants</a></p></div>";
+      
+      await renderHTML(res, "Customer-OrdersListView.html", {
+        ordersList,
+      });
+    } catch {
+      errorController(HTTP_STATUS.UNAUTHORIZED, req, res);
+    }
+  },
+
   // handles POST /order/cancel — cancels an existing order if it has not yet been picked up
   cancel: async (req, res) => {
     try {
