@@ -57,9 +57,26 @@ export const orderController = {
       if (!order) return errorController(HTTP_STATUS.NOT_FOUND, req, res); // sends 404 if the order doesn't exist
       const items = await repository.findItemsByOrderId(orderId); // fetches all items belonging to this order
       const orderItems = items.length
-        ? items.map(i => `<li>${i.itemName} — $${i.price}</li>`).join("") // builds the item list HTML
+        ? items
+            .map(
+              (i) =>
+                `<li>
+                  <div class="item-main">
+                    <div class="item-title-row">
+                      <span>${i.itemName}</span>
+                    </div>
+                    <div class="item-meta">Quantity: ${i.quantity}</div>
+                  </div>
+                  <div class="item-actions">
+                    <span class="price">$${(Number(i.price) * i.quantity).toFixed(2)}</span>
+                  </div>
+                </li>`,
+            )
+            .join("") // builds the item list HTML
         : "<li class='empty'>No items in this order.</li>"; // fallback when the order has no items yet
-      const totalPrice = items.reduce((sum, i) => sum + Number(i.price), 0).toFixed(2); // sums item prices to two decimals
+      const totalPrice = items
+        .reduce((sum, i) => sum + Number(i.price) * i.quantity, 0)
+        .toFixed(2); // sums item prices using quantity to two decimals
       await renderHTML(res, "Customer-OrderView.html", {
         orderId: order.orderId, // injected into {{orderId}} in the view
         orderStatus: order.status, // injected into {{orderStatus}} in the view
@@ -84,23 +101,26 @@ export const orderController = {
         ? (await Promise.all(
             filteredOrders.map(async (order) => {
               const items = await repository.findItemsByOrderId(order.orderId);
-              const totalPrice = items.reduce((sum, i) => sum + Number(i.price), 0).toFixed(2);
+              const totalPrice = items
+                .reduce((sum, i) => sum + Number(i.price) * i.quantity, 0)
+                .toFixed(2);
               return `<div class="card">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                  <div>
-                    <h3 style="margin: 0;">Order <span style="color:#999; font-weight:400; font-size:0.95rem;">#${order.orderId}</span></h3>
-                    <p style="margin: 0.5rem 0 0 0; color:#666; font-size:0.9rem;">${items.length} item${items.length !== 1 ? 's' : ''} — $${totalPrice}</p>
+                <div class="card-head">
+                  <div class="item-main">
+                    <div class="item-title-row">
+                      <h3>Order #${order.orderId}</h3>
+                    </div>
+                    <div class="item-meta">${items.reduce((sum, i) => sum + i.quantity, 0)} item${items.reduce((sum, i) => sum + i.quantity, 0) !== 1 ? 's' : ''} • $${totalPrice}</div>
                   </div>
-                  <div style="text-align: right;">
+                  <div class="item-actions">
                     <span class="badge">${order.status}</span>
-                    <br>
-                    <a href="/order?id=${order.orderId}" style="color:#00ccbc; text-decoration:none; font-size:0.9rem; margin-top:0.5rem; display:block;">View Details →</a>
+                    <a href="/order?id=${order.orderId}">View Details</a>
                   </div>
                 </div>
               </div>`;
             })
           )).join("")
-        : "<div class='card'><p style='color:#999; text-align:center;'>No orders yet. <a href='/home' style='color:#00ccbc;'>Browse restaurants</a></p></div>";
+        : "<div class='card'><p class='empty'>No orders yet. <a href='/home'>Browse restaurants</a></p></div>";
       
       await renderHTML(res, "Customer-OrdersListView.html", {
         ordersList,
@@ -119,7 +139,7 @@ export const orderController = {
       if (!order) return errorController(HTTP_STATUS.NOT_FOUND, req, res); // sends 404 if the order doesn't exist
       if (order.customerId !== userId) return errorController(HTTP_STATUS.UNAUTHORIZED, req, res); // prevents cancelling another customer's order
       if (order.status === OrderStatus.ONTHEWAY || order.status === OrderStatus.DELIVERED) { // can't cancel once a courrier has picked it up
-        return errorController(HTTP_STATUS.BAD_REQUEST, req, res);
+        return await renderHTML(res, "Order-CancelNotAllowedView.html", { orderId: order.orderId });
       }
       await repository.updateStatus(orderId, OrderStatus.INCOMPLETE); // marks the order as Incomplete Cart (cancelled)
       res.writeHead(HTTP_STATUS.SEE_OTHER, { Location: "/home" }); // redirects back to the customer home page

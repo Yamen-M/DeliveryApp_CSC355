@@ -8,23 +8,31 @@
   <body>
     <nav>
       <span class="brand">Deliveroo</span>
-      <a href="/home" style="font-size:0.9rem; color:#00ccbc; text-decoration:none;">← Home</a>
+      <a href="/home">← Home</a>
     </nav>
 
     <div class="container">
+      <section class="hero">
+        <h1>Order #{{orderId}}</h1>
+        <p>Track the status, items, and total for this order.</p>
+      </section>
 
       <div class="card">
-        <h2>Order <span style="color:#999; font-weight:400; font-size:0.95rem;">#{{orderId}}</span></h2>
-        <span class="badge">{{orderStatus}}</span>
+        <div class="card-head">
+          <h2>Order Details</h2>
+          <span class="badge">{{orderStatus}}</span>
+        </div>
       </div>
 
       <div class="card">
-        <h2>Items</h2>
+        <div class="card-head">
+          <h2>Items</h2>
+        </div>
         <ul class="item-list">
           {{orderItems}}
         </ul>
-        <p style="margin-top:1.2rem; font-weight:700; font-size:1.1rem;">
-          Total: <span style="color:#00ccbc;">${{totalPrice}}</span>
+        <p class="total-price">
+          Total: <span>${{totalPrice}}</span>
         </p>
       </div>
 

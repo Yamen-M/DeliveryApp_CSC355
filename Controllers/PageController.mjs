@@ -60,14 +60,21 @@ export const pageController = {
       const menuItems = items.length
         ? items.map(i =>
             `<li>
-              <span>${i.name} — $${Number(i.price).toFixed(2)}</span>
-              <br><small>${i.description ?? ""}</small>
-              <form method="POST" action="/cart/add" style="display:inline; margin-left:1rem;">
-                <input type="hidden" name="restaurantId" value="${restaurantId}" />
-                <input type="hidden" name="itemName" value="${i.name}" />
-                <input type="hidden" name="itemPrice" value="${i.price}" />
-                <button type="submit">+ Add</button>
-              </form>
+              <div class="item-main">
+                <div class="item-title-row">
+                  <span>${i.name}</span>
+                </div>
+                <div class="item-meta">${i.description ?? ""}</div>
+              </div>
+              <div class="item-actions">
+                <span class="price">$${Number(i.price).toFixed(2)}</span>
+                <form method="POST" action="/cart/add" class="inline-form">
+                  <input type="hidden" name="restaurantId" value="${restaurantId}" />
+                  <input type="hidden" name="itemName" value="${i.name}" />
+                  <input type="hidden" name="itemPrice" value="${i.price}" />
+                  <button type="submit" class="secondary">Add</button>
+                </form>
+              </div>
             </li>`).join("")
         : "<li class='empty'>No menu items yet.</li>";
 
@@ -81,7 +88,17 @@ export const pageController = {
         const cartRows = await orderRepo.findItemsByOrderId(cartOrder.orderId);
         if (cartRows.length) {
           cartItems = cartRows
-            .map(i => `<li>${i.itemName} × ${i.quantity} — $${(Number(i.price) * i.quantity).toFixed(2)}</li>`)
+            .map(i => `<li>
+              <div class="item-main">
+                <div class="item-title-row">
+                  <span>${i.itemName}</span>
+                </div>
+                <div class="item-meta">Quantity: ${i.quantity}</div>
+              </div>
+              <div class="item-actions">
+                <span class="price">$${(Number(i.price) * i.quantity).toFixed(2)}</span>
+              </div>
+            </li>`)
             .join("");
           totalPrice = cartRows
             .reduce((sum, i) => sum + Number(i.price) * i.quantity, 0)

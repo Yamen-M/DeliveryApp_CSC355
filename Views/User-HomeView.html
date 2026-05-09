@@ -14,19 +14,34 @@
     </nav>
 
     <div class="container">
-      <h1 style="font-size:1.3rem; color:#111;">
-        Welcome back, <strong>{{userEmail}}</strong>
-      </h1>
+      <section class="hero">
+        <h1>Welcome back, <strong>{{userEmail}}</strong></h1>
+        <p>Browse restaurants, check your recent orders, and keep track of active deliveries from one place.</p>
+      </section>
 
       <div class="card">
-        <h2>Quick Actions</h2>
+        <div class="card-head">
+          <h2>Quick Actions</h2>
+        </div>
         <ul class="item-list">
-          <li><a href="/orders" style="color:#00ccbc; text-decoration:none;">📦 View My Orders</a></li>
+          <li>
+            <div class="item-main">
+              <div class="item-title-row">
+                <span>View My Orders</span>
+              </div>
+              <div class="item-meta">Open your order history and track current progress.</div>
+            </div>
+            <div class="item-actions">
+              <a href="/orders">Open</a>
+            </div>
+          </li>
         </ul>
       </div>
 
       <div class="card">
-        <h2>Available Restaurants</h2>
+        <div class="card-head">
+          <h2>Available Restaurants</h2>
+        </div>
         <ul class="item-list">
           {{restaurantList}}
         </ul>

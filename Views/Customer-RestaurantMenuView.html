@@ -8,27 +8,35 @@
   <body>
     <nav>
       <span class="brand">{{restaurantName}}</span>
-      <a href="/home" style="font-size:0.9rem; color:#00ccbc; text-decoration:none;">← Back</a>
+      <a href="/home">← Back</a>
     </nav>
 
     <div class="container">
+      <section class="hero">
+        <h1>{{restaurantName}}</h1>
+        <p>Select items below and add them to your cart before placing your order.</p>
+      </section>
 
       <div class="card">
-        <h2>Menu</h2>
+        <div class="card-head">
+          <h2>Menu</h2>
+        </div>
         <ul class="item-list">
           {{menuItems}}
         </ul>
       </div>
 
       <div class="card">
-        <h2>Your Cart</h2>
+        <div class="card-head">
+          <h2>Your Cart</h2>
+        </div>
         <ul class="item-list">
           {{cartItems}}
         </ul>
-        <p style="margin-top:1rem; font-weight:700; font-size:1.05rem;">
-          Total: <span style="color:#00ccbc;">${{totalPrice}}</span>
+        <p class="total-price">
+          Total: <span>${{totalPrice}}</span>
         </p>
-        <form method="POST" action="/order/create" style="margin-top:1rem;">
+        <form method="POST" action="/order/create">
           <input type="hidden" name="restaurantId" value="{{restaurantId}}" />
           <button type="submit" {{checkoutDisabled}}>Place Order</button>
         </form>

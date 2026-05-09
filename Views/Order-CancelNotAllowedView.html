@@ -1,0 +1,87 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <title>Deliveroo — Cannot Cancel Order</title>
+    <link rel="stylesheet" href="/dashboard.css" />
+    <style>
+      .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 1000;
+      }
+
+      .modal {
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 420px;
+        box-shadow: 0 10px 40px rgba(0, 0, 0, 0.15);
+        text-align: center;
+      }
+
+      .modal h2 {
+        font-size: 1.3rem;
+        margin-bottom: 1rem;
+        color: #1a1a1a;
+      }
+
+      .modal p {
+        color: #666;
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+      }
+
+      .modal-actions {
+        display: flex;
+        gap: 1rem;
+      }
+
+      .modal-actions a {
+        flex: 1;
+        padding: 10px 16px;
+        border-radius: 6px;
+        font-weight: 600;
+        text-decoration: none;
+        cursor: pointer;
+        border: none;
+        font-size: 0.95rem;
+        transition: all 0.2s ease;
+      }
+
+      .modal-actions a.primary {
+        background: #00ccbc;
+        color: white;
+      }
+
+      .modal-actions a.primary:hover {
+        background: #00b3a4;
+        transform: translateY(-1px);
+      }
+    </style>
+  </head>
+  <body>
+    <nav>
+      <span class="brand">Deliveroo</span>
+      <a href="/home">← Home</a>
+    </nav>
+
+    <div class="modal-overlay">
+      <div class="modal">
+        <h2>Cannot Cancel Order</h2>
+        <p>This order is already on the way and cannot be cancelled. Please wait for it to arrive or contact support if you have issues.</p>
+        <div class="modal-actions">
+          <a href="/order?id={{orderId}}" class="primary">View Order</a>
+          <a href="/home">Back to Home</a>
+        </div>
+      </div>
+    </div>
+  </body>
+</html>
